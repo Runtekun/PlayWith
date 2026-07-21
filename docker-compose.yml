@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      TZ: Asia/Tokyo
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: playwith_development
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d playwith_development -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  back:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: bash -c "composer install && php artisan migrate && php artisan serve --host=0.0.0.0 --port=8000"
+    volumes:
+      - ./backend:/app
+      - composer_data:/root/.composer/cache
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    tty: true
+    stdin_open: true
+
+  front:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+      - node_modules:/app/node_modules
+    command: /bin/sh -c "npm install && npm run dev"
+    ports:
+      - "3002:3000"
+    environment:
+      - ESLINT_NO_DEV_ERRORS=true
+
+volumes:
+  postgres_data:
+  composer_data:
+  node_modules:
