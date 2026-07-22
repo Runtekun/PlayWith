@@ -4,8 +4,8 @@ ENV LANG C.UTF-8
 ENV TZ Asia/Tokyo
 
 RUN apt-get update -qq && \
-    apt-get install -y git unzip libpq-dev libzip-dev vim && \
-    docker-php-ext-install pdo pdo_pgsql zip && \
+    apt-get install -y git unzip libpq-dev libzip-dev libicu-dev vim && \
+    docker-php-ext-install pdo pdo_pgsql zip intl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
