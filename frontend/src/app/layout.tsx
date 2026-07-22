@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { M_PLUS_Rounded_1c } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { BottomNav } from "@/components/layout/BottomNav";
 
 const rounded = M_PLUS_Rounded_1c({
   variable: "--font-rounded",
@@ -22,11 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${rounded.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <BottomNav />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
