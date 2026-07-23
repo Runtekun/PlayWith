@@ -1,3 +1,5 @@
+"use client";
+
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthForm } from "@/components/auth/AuthForm";
 
@@ -9,7 +11,14 @@ export default function LoginPage() {
       footerLinkText="新規登録"
       footerLinkHref="/signup"
     >
-      <AuthForm submitLabel="ログイン" />
+      <AuthForm
+        mode="login"
+        submitLabel="ログイン"
+        onSubmit={async () => {
+          // TODO: ログインAPI実装後に接続する
+          throw new Error("ログイン機能は準備中です");
+        }}
+      />
     </AuthCard>
   );
 }
