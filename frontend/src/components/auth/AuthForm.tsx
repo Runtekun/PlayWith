@@ -20,12 +20,10 @@ type AuthFormProps = {
 export function AuthForm({ mode, submitLabel, onSubmit }: AuthFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrorMessage(null);
-    setSuccessMessage(null);
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
@@ -40,9 +38,7 @@ export function AuthForm({ mode, submitLabel, onSubmit }: AuthFormProps) {
             ? String(formData.get("passwordConfirmation"))
             : undefined,
       });
-      setSuccessMessage(
-        mode === "signup" ? "登録が完了しました" : "ログインしました",
-      );
+      // 成功時は呼び出し元(page.tsx)がリダイレクトするため、ここでは何もしない
     } catch (error) {
       if (error instanceof ApiValidationError) {
         setErrorMessage(Object.values(error.errors)[0]?.[0] ?? error.message);
@@ -59,9 +55,6 @@ export function AuthForm({ mode, submitLabel, onSubmit }: AuthFormProps) {
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
       {errorMessage && <FlashMessage type="error" message={errorMessage} />}
-      {successMessage && (
-        <FlashMessage type="success" message={successMessage} />
-      )}
 
       {mode === "signup" && (
         <div className="flex flex-col gap-1.5">
