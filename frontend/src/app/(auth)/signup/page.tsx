@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { apiPost } from "@/lib/api";
+import { setFlash } from "@/lib/flash";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -26,9 +27,8 @@ export default function SignupPage() {
             password_confirmation: passwordConfirmation,
           });
 
-          setTimeout(() => {
-            router.push("/");
-          }, 1000);
+          setFlash("success", "登録が完了しました");
+          router.push("/");
         }}
       />
     </AuthCard>
