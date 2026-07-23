@@ -1,18 +1,94 @@
-type AuthFormProps = {
-  submitLabel: string;
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { FlashMessage } from "@/components/ui/FlashMessage";
+import { ApiValidationError } from "@/lib/api";
+
+type AuthFormValues = {
+  name?: string;
+  email: string;
+  password: string;
+  passwordConfirmation?: string;
 };
 
-export function AuthForm({ submitLabel }: AuthFormProps) {
+type AuthFormProps = {
+  mode: "login" | "signup";
+  submitLabel: string;
+  onSubmit: (values: AuthFormValues) => Promise<void>;
+};
+
+export function AuthForm({ mode, submitLabel, onSubmit }: AuthFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setIsSubmitting(true);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      await onSubmit({
+        name: mode === "signup" ? String(formData.get("name")) : undefined,
+        email: String(formData.get("email")),
+        password: String(formData.get("password")),
+        passwordConfirmation:
+          mode === "signup"
+            ? String(formData.get("passwordConfirmation"))
+            : undefined,
+      });
+      setSuccessMessage(
+        mode === "signup" ? "登録が完了しました" : "ログインしました",
+      );
+    } catch (error) {
+      if (error instanceof ApiValidationError) {
+        setErrorMessage(Object.values(error.errors)[0]?.[0] ?? error.message);
+      } else if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("予期しないエラーが発生しました");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
-    <form className="flex flex-col gap-4">
+    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+      {errorMessage && <FlashMessage type="error" message={errorMessage} />}
+      {successMessage && (
+        <FlashMessage type="success" message={successMessage} />
+      )}
+
+      {mode === "signup" && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="name" className="text-xs font-bold text-muted">
+            お名前
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="ゲーム太郎"
+            required
+            className="rounded-xl border border-black/10 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          />
+        </div>
+      )}
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-xs font-bold text-muted">
           メールアドレス
         </label>
         <input
           id="email"
+          name="email"
           type="email"
           placeholder="you@example.com"
+          required
           className="rounded-xl border border-black/10 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
         />
       </div>
@@ -22,17 +98,39 @@ export function AuthForm({ submitLabel }: AuthFormProps) {
         </label>
         <input
           id="password"
+          name="password"
           type="password"
           placeholder="********"
+          required
           className="rounded-xl border border-black/10 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
         />
       </div>
 
+      {mode === "signup" && (
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="passwordConfirmation"
+            className="text-xs font-bold text-muted"
+          >
+            パスワード(確認)
+          </label>
+          <input
+            id="passwordConfirmation"
+            name="passwordConfirmation"
+            type="password"
+            placeholder="********"
+            required
+            className="rounded-xl border border-black/10 px-4 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+          />
+        </div>
+      )}
+
       <button
         type="submit"
-        className="mt-2 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-[0_3px_0_var(--primary-shadow)]"
+        disabled={isSubmitting}
+        className="mt-2 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-[0_3px_0_var(--primary-shadow)] disabled:opacity-60"
       >
-        {submitLabel}
+        {isSubmitting ? "送信中..." : submitLabel}
       </button>
 
       <div className="my-1 flex items-center gap-3">
