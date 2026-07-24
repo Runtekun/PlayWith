@@ -1,9 +1,14 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { apiPost } from "@/lib/api";
+import { setFlash } from "@/lib/flash";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   return (
     <AuthCard
       title="ログイン"
@@ -14,9 +19,11 @@ export default function LoginPage() {
       <AuthForm
         mode="login"
         submitLabel="ログイン"
-        onSubmit={async () => {
-          // TODO: ログインAPI実装後に接続する
-          throw new Error("ログイン機能は準備中です");
+        onSubmit={async ({ email, password }) => {
+          await apiPost("/api/login", { email, password });
+
+          setFlash("success", "ログインしました");
+          router.push("/");
         }}
       />
     </AuthCard>
