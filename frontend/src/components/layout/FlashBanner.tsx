@@ -20,7 +20,7 @@ export function FlashBanner() {
   if (!flash) return null;
 
   return (
-    <div className="px-4 pt-4">
+    <div className="flex justify-center px-4 pt-4">
       <FlashMessage type={flash.type} message={flash.message} />
     </div>
   );
