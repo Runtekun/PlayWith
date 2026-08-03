@@ -32,7 +32,7 @@ class PlayerCardController extends Controller
             'bio' => ['nullable', 'string', 'max:1000'],
             'games' => ['required', 'array', 'min:1'],
             'games.*.game_id' => ['required', 'integer', 'exists:games,id'],
-            'games.*.rank_id' => ['required', 'integer', 'exists:ranks,id'],
+            'games.*.rank_id' => ['nullable', 'integer', 'exists:ranks,id'],
             'games.*.play_style' => ['required', 'string', 'max:50'],
             'games.*.play_time_slot' => ['required', 'string', 'max:50'],
             'games.*.voice_chat' => ['required', 'boolean'],
@@ -57,10 +57,14 @@ class PlayerCardController extends Controller
     {
         $games = $request->input('games', []);
 
-        $rankIds = collect($games)->pluck('rank_id')->unique();
+        $rankIds = collect($games)->pluck('rank_id')->filter()->unique();
         $ranksByGameId = Rank::whereIn('id', $rankIds)->get()->keyBy('id');
 
         foreach ($games as $index => $gameData) {
+            if (empty($gameData['rank_id'])) {
+                continue;
+            }
+
             $rank = $ranksByGameId->get($gameData['rank_id']);
 
             if ($rank && $rank->game_id !== (int) $gameData['game_id']) {
