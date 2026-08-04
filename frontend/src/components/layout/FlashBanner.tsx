@@ -1,21 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { FlashMessage } from "@/components/ui/FlashMessage";
 import { consumeFlash } from "@/lib/flash";
 
 export function FlashBanner() {
+  const pathname = usePathname();
   const [flash, setFlash] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const hasConsumed = useRef(false);
+  const consumedForPathname = useRef<string | null>(null);
 
   useEffect(() => {
-    if (hasConsumed.current) return;
-    hasConsumed.current = true;
+    if (consumedForPathname.current === pathname) return;
+    consumedForPathname.current = pathname;
     setFlash(consumeFlash());
-  }, []);
+  }, [pathname]);
 
   if (!flash) return null;
 

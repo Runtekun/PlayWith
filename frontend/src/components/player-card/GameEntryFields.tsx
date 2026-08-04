@@ -1,11 +1,12 @@
 "use client";
 
 import { X } from "lucide-react";
-import { GAMES, PLAY_STYLES, PLAY_TIME_SLOTS, RANKS_BY_GAME } from "@/lib/game-options";
+import { PLAY_STYLES, PLAY_TIME_SLOTS } from "@/lib/game-options";
+import type { Game } from "@/lib/games";
 
 export type GameEntryValue = {
-  game: string;
-  rank: string;
+  gameId: number;
+  rankId: number | null;
   playStyle: string;
   playTimeSlot: string;
   voiceChat: boolean;
@@ -14,6 +15,7 @@ export type GameEntryValue = {
 type GameEntryFieldsProps = {
   index: number;
   value: GameEntryValue;
+  games: Game[];
   onChange: (value: GameEntryValue) => void;
   onRemove: () => void;
   removable: boolean;
@@ -25,11 +27,12 @@ const selectClassName =
 export function GameEntryFields({
   index,
   value,
+  games,
   onChange,
   onRemove,
   removable,
 }: GameEntryFieldsProps) {
-  const ranks = RANKS_BY_GAME[value.game] ?? [];
+  const ranks = games.find((g) => g.id === value.gameId)?.ranks ?? [];
 
   return (
     <div className="relative mb-3 rounded-2xl bg-background p-3">
@@ -48,22 +51,31 @@ export function GameEntryFields({
       </div>
       <div className="grid grid-cols-2 gap-1.5">
         <select
-          value={value.game}
+          value={value.gameId}
           onChange={(e) =>
-            onChange({ ...value, game: e.target.value, rank: "" })
+            onChange({
+              ...value,
+              gameId: Number(e.target.value),
+              rankId: null,
+            })
           }
           className={selectClassName}
         >
-          {GAMES.map((game) => (
-            <option key={game} value={game}>
-              {game}
+          {games.map((game) => (
+            <option key={game.id} value={game.id}>
+              {game.name}
             </option>
           ))}
         </select>
 
         <select
-          value={value.rank}
-          onChange={(e) => onChange({ ...value, rank: e.target.value })}
+          value={value.rankId ?? ""}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              rankId: e.target.value ? Number(e.target.value) : null,
+            })
+          }
           disabled={ranks.length === 0}
           className={selectClassName}
         >
@@ -71,8 +83,8 @@ export function GameEntryFields({
             {ranks.length === 0 ? "ランクなし" : "選択してください"}
           </option>
           {ranks.map((rank) => (
-            <option key={rank} value={rank}>
-              {rank}
+            <option key={rank.id} value={rank.id}>
+              {rank.name}
             </option>
           ))}
         </select>
