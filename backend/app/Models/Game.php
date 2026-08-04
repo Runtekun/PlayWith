@@ -11,6 +11,6 @@ class Game extends Model
 {
     public function ranks(): HasMany
     {
-        return $this->hasMany(Rank::class);
+        return $this->hasMany(Rank::class)->orderBy('sort_order');
     }
 }
