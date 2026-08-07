@@ -24,6 +24,23 @@ async function ensureCsrfCookie(): Promise<void> {
   });
 }
 
+export async function apiGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.message ?? "通信に失敗しました");
+  }
+
+  return data as T;
+}
+
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   await ensureCsrfCookie();
 
