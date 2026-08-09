@@ -9,6 +9,15 @@ export class ApiValidationError extends Error {
   }
 }
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function getCookie(name: string): string | undefined {
   return document.cookie
     .split("; ")
@@ -35,7 +44,7 @@ export async function apiGet<T>(path: string): Promise<T> {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.message ?? "通信に失敗しました");
+    throw new ApiError(data?.message ?? "通信に失敗しました", response.status);
   }
 
   return data as T;
