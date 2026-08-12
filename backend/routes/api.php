@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\PlayerCardController;
+use App\Http\Controllers\SwipeActionController;
+use App\Http\Controllers\SwipeCandidateController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [RegisterController::class, 'store']);
@@ -17,4 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/player-card', [PlayerCardController::class, 'show']);
     Route::post('/player-card', [PlayerCardController::class, 'store']);
+
+    Route::get('/swipe-candidates', [SwipeCandidateController::class, 'index']);
+    Route::post('/swipe-actions', [SwipeActionController::class, 'store']);
 });
