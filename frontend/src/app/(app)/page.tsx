@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, apiGet } from "@/lib/api";
 import type { PlayerCard } from "@/lib/player-card";
+import { SwipeScreen } from "@/components/swipe/SwipeScreen";
 
 export default function Home() {
   const router = useRouter();
@@ -29,9 +30,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="flex flex-1 items-center justify-center px-4 text-center text-sm text-muted">
-      プレイヤーカードは作成済みです。スワイプ画面は準備中です。
-    </div>
-  );
+  return <SwipeScreen />;
 }
