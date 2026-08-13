@@ -12,9 +12,15 @@ export type PlayerCardGame = {
   rank: Rank | null;
 };
 
+export type PlayerCardUser = {
+  id: number;
+  name: string;
+};
+
 export type PlayerCard = {
   id: number;
   user_id: number;
   bio: string | null;
   player_card_games: PlayerCardGame[];
+  user?: PlayerCardUser;
 };
