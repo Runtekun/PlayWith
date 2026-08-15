@@ -1,80 +1,75 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart, X } from "lucide-react";
 import { SwipeCard } from "./SwipeCard";
+import { FlashMessage } from "@/components/ui/FlashMessage";
+import { fetchSwipeCandidates, submitSwipeAction } from "@/lib/swipe";
 import type { PlayerCard } from "@/lib/player-card";
 
-// TODO: バックエンドにスワイプ候補取得APIができ次第、fetchしたデータに置き換える
-const MOCK_CANDIDATES: PlayerCard[] = [
-  {
-    id: 1,
-    user_id: 101,
-    bio: "APEXでプラチナ目指してます!よろしくお願いします。",
-    user: { id: 101, name: "ゆうき" },
-    player_card_games: [
-      {
-        id: 1,
-        player_card_id: 1,
-        game_id: 2,
-        rank_id: 3,
-        play_style: "エンジョイ勢",
-        play_time_slot: "平日夜",
-        voice_chat: true,
-        game: { id: 2, name: "APEX Legends", ranks: [] },
-        rank: { id: 3, game_id: 2, name: "ゴールド", sort_order: 3 },
-      },
-    ],
-  },
-  {
-    id: 2,
-    user_id: 102,
-    bio: "VALORANTまったり勢です。初心者さん歓迎!",
-    user: { id: 102, name: "みさき" },
-    player_card_games: [
-      {
-        id: 2,
-        player_card_id: 2,
-        game_id: 3,
-        rank_id: null,
-        play_style: "まったり勢",
-        play_time_slot: "週末昼",
-        voice_chat: false,
-        game: { id: 3, name: "VALORANT", ranks: [] },
-        rank: null,
-      },
-    ],
-  },
-];
-
 export function SwipeScreen() {
+  const [candidates, setCandidates] = useState<PlayerCard[] | null>(null);
   const [index, setIndex] = useState(0);
-  const currentCard = MOCK_CANDIDATES[index];
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [matchMessage, setMatchMessage] = useState<string | null>(null);
 
-  function handleAction() {
-    // TODO: POST /api/swipe-actions に接続する
-    setIndex((prev) => prev + 1);
+  useEffect(() => {
+    fetchSwipeCandidates().then(setCandidates);
+  }, []);
+
+  const currentCard = candidates?.[index];
+
+  async function handleAction(action: "like" | "skip") {
+    if (!currentCard || isSubmitting) return;
+    setIsSubmitting(true);
+    setMatchMessage(null);
+
+    try {
+      const result = await submitSwipeAction(currentCard.user_id, action);
+      if (result.match) {
+        setMatchMessage(
+          `${currentCard.user?.name ?? "相手"}さんとマッチしました!`,
+        );
+      }
+      setIndex((prev) => prev + 1);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (candidates === null) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-sm text-muted">
+        読み込み中...
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
+      {matchMessage && (
+        <FlashMessage type="success" message={matchMessage} />
+      )}
+
       {currentCard ? (
         <>
           <SwipeCard playerCard={currentCard} />
           <div className="flex items-center gap-6">
             <button
               type="button"
-              onClick={handleAction}
+              onClick={() => handleAction("skip")}
+              disabled={isSubmitting}
               aria-label="スキップ"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-muted-light shadow-[0_4px_0_#e5e5e5]"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-muted-light shadow-[0_4px_0_#e5e5e5] disabled:opacity-60"
             >
               <X size={24} strokeWidth={2.5} />
             </button>
             <button
               type="button"
-              onClick={handleAction}
+              onClick={() => handleAction("like")}
+              disabled={isSubmitting}
               aria-label="一緒にプレイ"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_0_var(--primary-shadow)]"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_0_var(--primary-shadow)] disabled:opacity-60"
             >
               <Heart size={24} strokeWidth={2.5} />
             </button>
