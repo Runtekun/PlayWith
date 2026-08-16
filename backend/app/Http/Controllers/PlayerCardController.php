@@ -12,7 +12,7 @@ class PlayerCardController extends Controller
     {
         $playerCard = $request->user()
             ->playerCard()
-            ->with(['playerCardGames.game', 'playerCardGames.rank'])
+            ->with(['user', 'playerCardGames.game', 'playerCardGames.rank'])
             ->first();
 
         if (! $playerCard) {
@@ -48,7 +48,7 @@ class PlayerCardController extends Controller
             $playerCard->playerCardGames()->create($gameData);
         }
 
-        $playerCard->load(['playerCardGames.game', 'playerCardGames.rank']);
+        $playerCard->load(['user', 'playerCardGames.game', 'playerCardGames.rank']);
 
         return response()->json(['player_card' => $playerCard], 201);
     }
