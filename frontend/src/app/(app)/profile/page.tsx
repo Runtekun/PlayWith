@@ -32,53 +32,56 @@ export default function ProfilePage() {
 
   return (
     <div className="px-4 pb-6">
-      <div className="mx-auto max-w-sm overflow-hidden rounded-3xl bg-white shadow-[0_6px_0_#e8dcc8]">
-        <div className="relative h-24 bg-gradient-to-br from-primary to-secondary">
-          <div className="absolute -bottom-7 left-4 flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-secondary text-xl font-bold text-white">
+      <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl bg-white shadow-[0_6px_0_#e8dcc8]">
+        <div className="relative h-28 bg-gradient-to-br from-primary to-secondary">
+          <div className="absolute -bottom-8 left-8 flex h-[72px] w-[72px] items-center justify-center rounded-full border-4 border-white bg-secondary text-2xl font-bold text-white">
             {playerCard.user?.name?.charAt(0) ?? "?"}
           </div>
         </div>
 
-        <div className="px-4 pb-4 pt-9">
-          <p className="text-sm font-bold text-foreground">
+        <div className="px-8 pt-10">
+          <p className="text-lg font-bold text-foreground">
             {playerCard.user?.name ?? "プレイヤー"}
           </p>
           {playerCard.bio && (
-            <p className="mt-0.5 text-xs text-muted">{playerCard.bio}</p>
+            <p className="mt-1.5 text-sm text-muted">{playerCard.bio}</p>
           )}
         </div>
-      </div>
 
-      <div className="mx-auto mt-3 max-w-sm">
-        <div className="mb-1.5 text-xs font-bold text-muted">登録ゲーム</div>
-        {playerCard.player_card_games.map((entry) => (
-          <div key={entry.id} className="mb-3 rounded-2xl bg-white p-3">
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-sm font-bold text-foreground">
-                {entry.game.name}
-              </span>
-              {entry.voice_chat && (
-                <span className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-white">
-                  <Mic size={11} strokeWidth={2.5} />
-                  ボイスOK
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {entry.rank && (
-                <span className="rounded-full bg-background px-2.5 py-1 text-xs font-bold text-foreground">
-                  {entry.rank.name}
-                </span>
-              )}
-              <span className="rounded-full bg-background px-2.5 py-1 text-xs font-bold text-foreground">
-                {entry.play_style}
-              </span>
-              <span className="rounded-full bg-background px-2.5 py-1 text-xs font-bold text-foreground">
-                {entry.play_time_slot}
-              </span>
-            </div>
+        <div className="px-8 pb-8 pt-4">
+          <div className="mb-1 text-xs font-bold text-muted-light">
+            登録ゲーム
           </div>
-        ))}
+          {playerCard.player_card_games.map((entry) => (
+            <div
+              key={entry.id}
+              className="flex flex-col gap-2 border-t border-black/5 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm font-bold text-foreground">
+                  {entry.game.name}
+                </span>
+                {entry.rank && (
+                  <span className="rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground">
+                    {entry.rank.name}
+                  </span>
+                )}
+                <span className="rounded-full bg-background px-3 py-1 text-xs font-bold text-foreground">
+                  {entry.play_style}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-bold text-secondary">
+                <span>{entry.play_time_slot}</span>
+                {entry.voice_chat && (
+                  <span className="flex items-center gap-0.5">
+                    <Mic size={12} strokeWidth={2.5} />
+                    ボイスOK
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
