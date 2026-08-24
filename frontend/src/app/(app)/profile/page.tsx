@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Mic } from "lucide-react";
 import { ApiError, apiGet } from "@/lib/api";
 import type { PlayerCard } from "@/lib/player-card";
@@ -39,13 +40,21 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="px-8 pt-10">
-          <p className="text-lg font-bold text-foreground">
-            {playerCard.user?.name ?? "プレイヤー"}
-          </p>
-          {playerCard.bio && (
-            <p className="mt-1.5 text-sm text-muted">{playerCard.bio}</p>
-          )}
+        <div className="flex items-start justify-between px-8 pt-10">
+          <div>
+            <p className="text-lg font-bold text-foreground">
+              {playerCard.user?.name ?? "プレイヤー"}
+            </p>
+            {playerCard.bio && (
+              <p className="mt-1.5 text-sm text-muted">{playerCard.bio}</p>
+            )}
+          </div>
+          <Link
+            href="/player-card/edit"
+            className="rounded-full border border-black/10 px-4 py-1.5 text-xs font-bold text-muted"
+          >
+            編集
+          </Link>
         </div>
 
         <div className="px-8 pb-8 pt-4">

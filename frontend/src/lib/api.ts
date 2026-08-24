@@ -50,13 +50,17 @@ export async function apiGet<T>(path: string): Promise<T> {
   return data as T;
 }
 
-export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+async function apiSend<T>(
+  method: "POST" | "PUT",
+  path: string,
+  body: unknown,
+): Promise<T> {
   await ensureCsrfCookie();
 
   const xsrfToken = decodeURIComponent(getCookie("XSRF-TOKEN") ?? "");
 
   const response = await fetch(`${API_URL}${path}`, {
-    method: "POST",
+    method,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
@@ -80,4 +84,12 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   }
 
   return data as T;
+}
+
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  return apiSend<T>("POST", path, body);
+}
+
+export async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  return apiSend<T>("PUT", path, body);
 }
