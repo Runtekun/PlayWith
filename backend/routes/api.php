@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/player-card', [PlayerCardController::class, 'show']);
     Route::post('/player-card', [PlayerCardController::class, 'store']);
+    Route::put('/player-card', [PlayerCardController::class, 'update']);
 
     Route::get('/swipe-candidates', [SwipeCandidateController::class, 'index']);
     Route::post('/swipe-actions', [SwipeActionController::class, 'store']);

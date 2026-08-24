@@ -28,17 +28,7 @@ class PlayerCardController extends Controller
             return response()->json(['message' => 'プレイヤーカードは既に作成されています。'], 422);
         }
 
-        $validated = $request->validate([
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'games' => ['required', 'array', 'min:1'],
-            'games.*.game_id' => ['required', 'integer', 'exists:games,id'],
-            'games.*.rank_id' => ['nullable', 'integer', 'exists:ranks,id'],
-            'games.*.play_style' => ['required', 'string', 'max:50'],
-            'games.*.play_time_slot' => ['required', 'string', 'max:50'],
-            'games.*.voice_chat' => ['required', 'boolean'],
-        ]);
-
-        $this->validateRanksBelongToGames($request);
+        $validated = $this->validatePlayerCard($request);
 
         $playerCard = $request->user()->playerCard()->create([
             'bio' => $validated['bio'] ?? null,
@@ -53,10 +43,47 @@ class PlayerCardController extends Controller
         return response()->json(['player_card' => $playerCard], 201);
     }
 
-    private function validateRanksBelongToGames(Request $request): void
+    public function update(Request $request)
     {
-        $games = $request->input('games', []);
+        $playerCard = $request->user()->playerCard;
 
+        if (! $playerCard) {
+            return response()->json(['message' => 'プレイヤーカードが見つかりません。'], 404);
+        }
+
+        $validated = $this->validatePlayerCard($request);
+
+        $playerCard->update(['bio' => $validated['bio'] ?? null]);
+
+        $playerCard->playerCardGames()->delete();
+        foreach ($validated['games'] as $gameData) {
+            $playerCard->playerCardGames()->create($gameData);
+        }
+
+        $playerCard->load(['user', 'playerCardGames.game', 'playerCardGames.rank']);
+
+        return response()->json(['player_card' => $playerCard]);
+    }
+
+    private function validatePlayerCard(Request $request): array
+    {
+        $validated = $request->validate([
+            'bio' => ['nullable', 'string', 'max:1000'],
+            'games' => ['required', 'array', 'min:1'],
+            'games.*.game_id' => ['required', 'integer', 'exists:games,id'],
+            'games.*.rank_id' => ['nullable', 'integer', 'exists:ranks,id'],
+            'games.*.play_style' => ['required', 'string', 'max:50'],
+            'games.*.play_time_slot' => ['required', 'string', 'max:50'],
+            'games.*.voice_chat' => ['required', 'boolean'],
+        ]);
+
+        $this->validateRanksBelongToGames($validated['games']);
+
+        return $validated;
+    }
+
+    private function validateRanksBelongToGames(array $games): void
+    {
         $rankIds = collect($games)->pluck('rank_id')->filter()->unique();
         $ranksByGameId = Rank::whereIn('id', $rankIds)->get()->keyBy('id');
 
