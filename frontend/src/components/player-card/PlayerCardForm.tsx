@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiPost } from "@/lib/api";
+import { apiPost, apiPut } from "@/lib/api";
 import { fetchGames, type Game } from "@/lib/games";
 import { setFlash } from "@/lib/flash";
 import { FlashMessage } from "@/components/ui/FlashMessage";
@@ -18,12 +18,27 @@ function createEmptyEntry(games: Game[]): GameEntryValue {
   };
 }
 
-export function PlayerCardForm() {
+export type PlayerCardFormInitialValues = {
+  bio: string;
+  entries: GameEntryValue[];
+};
+
+type PlayerCardFormProps = {
+  mode?: "create" | "edit";
+  initialValues?: PlayerCardFormInitialValues;
+};
+
+export function PlayerCardForm({
+  mode = "create",
+  initialValues,
+}: PlayerCardFormProps) {
   const router = useRouter();
   const [games, setGames] = useState<Game[]>([]);
   const [isLoadingGames, setIsLoadingGames] = useState(true);
-  const [bio, setBio] = useState("");
-  const [entries, setEntries] = useState<GameEntryValue[]>([]);
+  const [bio, setBio] = useState(initialValues?.bio ?? "");
+  const [entries, setEntries] = useState<GameEntryValue[]>(
+    initialValues?.entries ?? [],
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -31,9 +46,12 @@ export function PlayerCardForm() {
     fetchGames()
       .then((fetchedGames) => {
         setGames(fetchedGames);
-        setEntries([createEmptyEntry(fetchedGames)]);
+        if (!initialValues) {
+          setEntries([createEmptyEntry(fetchedGames)]);
+        }
       })
       .finally(() => setIsLoadingGames(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -41,20 +59,27 @@ export function PlayerCardForm() {
     setErrorMessage(null);
     setIsSubmitting(true);
 
-    try {
-      await apiPost("/api/player-card", {
-        bio,
-        games: entries.map((entry) => ({
-          game_id: entry.gameId,
-          rank_id: entry.rankId,
-          play_style: entry.playStyle,
-          play_time_slot: entry.playTimeSlot,
-          voice_chat: entry.voiceChat,
-        })),
-      });
+    const payload = {
+      bio,
+      games: entries.map((entry) => ({
+        game_id: entry.gameId,
+        rank_id: entry.rankId,
+        play_style: entry.playStyle,
+        play_time_slot: entry.playTimeSlot,
+        voice_chat: entry.voiceChat,
+      })),
+    };
 
-      setFlash("success", "プレイヤーカードを作成しました");
-      router.push("/");
+    try {
+      if (mode === "edit") {
+        await apiPut("/api/player-card", payload);
+        setFlash("success", "プレイヤーカードを更新しました");
+        router.push("/profile");
+      } else {
+        await apiPost("/api/player-card", payload);
+        setFlash("success", "プレイヤーカードを作成しました");
+        router.push("/");
+      }
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "予期しないエラーが発生しました",
@@ -77,7 +102,7 @@ export function PlayerCardForm() {
       className="w-full max-w-sm rounded-3xl bg-white p-4 shadow-[0_6px_0_#e8dcc8]"
     >
       <h1 className="mb-3 text-center text-base font-bold text-foreground">
-        プレイヤーカードを作成
+        {mode === "edit" ? "プレイヤーカードを編集" : "プレイヤーカードを作成"}
       </h1>
 
       {errorMessage && <FlashMessage type="error" message={errorMessage} />}
